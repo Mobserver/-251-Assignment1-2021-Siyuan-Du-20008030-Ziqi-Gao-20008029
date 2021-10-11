@@ -1,6 +1,10 @@
-package main.java.TextEditor;
+package TextEditor;
+
+
 
 import javafx.application.Application;
+import javafx.beans.Observable;
+import javafx.collections.ObservableSet;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.print.Printer;
@@ -8,13 +12,42 @@ import javafx.print.PrinterJob;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.*;
 import javafx.scene.transform.Scale;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
 import java.io.*;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+import javafx.application.Application;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.concurrent.Worker.State;
+import javafx.print.*;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.transform.Scale;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import javafx.stage.Stage;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.*;
+
+
+import javax.swing.text.Document;
 import java.util.ArrayList;
+
+
+
 
 public class TextEditorMain extends Application {
 
@@ -32,8 +65,9 @@ public class TextEditorMain extends Application {
         Menu Search = new Menu("Search");
         Menu View = new Menu("View");
         Menu Manage = new Menu("Manage");
+        Menu Print = new Menu("Print");
         Menu Help = new Menu("Help");
-        MB.getMenus().addAll(File,Search,View,Manage,Help);
+        MB.getMenus().addAll(File,Search,View,Manage,Help,Print);
         root.getChildren().addAll(MB);
 
 
@@ -45,6 +79,13 @@ public class TextEditorMain extends Application {
         TF.setPrefWidth(width);
         root.getChildren().addAll(TF);
         TF.setWrapText(true);
+
+
+        //add start time
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        TF.appendText(dtf.format(now));
+        TF.appendText("\n");
 
 
         /*File*/
@@ -114,9 +155,27 @@ public class TextEditorMain extends Application {
         Exit.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                System.out.println("Exit");
-                System.exit(0);
+                if (TF.getText().isEmpty()) {
+                    System.out.println("Exit");
+                    System.exit(0);
+                    return;
+                }
+                Alert alert = new Alert(
+                        Alert.AlertType.CONFIRMATION,
+                        "Exit without saving?",
+                        ButtonType.YES,
+                        ButtonType.CANCEL
+                );
+                alert.setTitle("Confirm");
+                alert.showAndWait();
+
+                if (alert.getResult() == ButtonType.YES) {
+                    System.exit(0);
+                }
             }
+
+
+
         });
 
         File.getItems().addAll(New,Open,Save,Exit);
@@ -129,7 +188,7 @@ public class TextEditorMain extends Application {
             public void handle(ActionEvent actionEvent) {
                 VBox search = new VBox();
                 Stage newstage = new Stage();
-                newstage.setScene(new Scene(search, 200, 300));
+                newstage.setScene(new Scene(search, 200, 100));
                 newstage.setTitle("Search");
                 Label label1 = new Label("Press enter");
                 Label label2 = new Label("Support continuous search");
@@ -203,24 +262,74 @@ public class TextEditorMain extends Application {
         });
         Help.getItems().addAll(about);
 
-        /*Manage*/
-        MenuItem print = new MenuItem("print");
+
+
+        /*print
+        MenuItem print = new MenuItem("Print");
         print.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                Printer printer = Printer.getDefaultPrinter();
-                PrinterJob job = PrinterJob.createPrinterJob();
-                Node node = TF;
-                node.getTransforms().add(new Scale(width,height));
-                if (job != null){
-                    boolean success = job.printPage(node);
-                    if(success){
-                        job.endJob();
-                    }
+
+                ObservableSet<Printer> printers = Printer.getAllPrinters();
+                for(Printer printer : printers){
+                    TF.appendText(printer.getName()+"\n");
                 }
             }
         });
-        Manage.getItems().addAll(print);
+        VBox prt = new VBox(10);
+
+        final TextArea textArea = new TextArea();
+        prt.getChildren().addAll(button,textArea);
+        prt.setPrefSize(400,250);
+        prt.setStyle("-fx-padding: 10;" +
+                "-fx-border-style: solid inside;" +
+                "-fx-border-width: 2;" +
+                "-fx-border-insets: 5;" +
+                "-fx-border-radius: 5;" +
+                "-fx-border-color: blue;");
+        Scene scene = new Scene(prt);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("show all printers");*/
+
+
+        /*PDF  manage*/
+        MenuItem PDF = new MenuItem("PDF");
+        PDF.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                String s = TF.getText();
+
+                PDDocument doc = null;
+                PDPage page1 = null;
+                try{
+                    doc = new PDDocument();
+                    float wid = 700;
+                    float hei = 600;
+                    PDRectangle pdRectangle = new PDRectangle(wid,hei);
+                    page1 = new PDPage(pdRectangle);
+                    doc.addPage(page1);
+                    s = s.replace("\n", "").replace("\r", "");
+
+                    PDPageContentStream contentStream = new PDPageContentStream(doc,page1,PDPageContentStream.AppendMode.APPEND,true,false);
+                    PDFont font = PDType1Font.TIMES_BOLD_ITALIC;
+                    contentStream.beginText();
+
+                    contentStream.newLineAtOffset(0,580);
+                    contentStream.setFont(font,12);
+                    contentStream.setNonStrokingColor(0,0,0);
+                    contentStream.showText(s);
+                    contentStream.endText();
+                    contentStream.close();
+
+                    doc.save("PDF.pdf");
+                }catch (IOException e){
+                    e.printStackTrace();
+                }finally {
+                    System.out.println("Pdf generation complete");
+                }
+            }
+        });
+        Manage.getItems().addAll(PDF);
 
 
         /*show*/
