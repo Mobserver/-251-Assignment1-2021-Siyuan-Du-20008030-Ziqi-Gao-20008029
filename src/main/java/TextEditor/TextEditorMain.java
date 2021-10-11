@@ -13,10 +13,17 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.*;
 import javafx.scene.transform.Scale;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.awt.*;
 import java.io.*;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
@@ -37,7 +44,6 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import java.util.ArrayList;
-
 
 
 
@@ -260,29 +266,26 @@ public class TextEditorMain extends Application {
         print.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                final Node node = root;
+                Printer printer = Printer.getDefaultPrinter();
+                PageLayout pageLayout = printer.createPageLayout(Paper.NA_LETTER,PageOrientation.PORTRAIT,Printer.MarginType.DEFAULT);
+                double scaleX = pageLayout.getPrintableWidth() / node.getBoundsInParent().getWidth();
+                double scaleY = pageLayout.getPrintableHeight() / node.getBoundsInParent().getHeight();
+                node.getTransforms().add(new Scale(scaleX,scaleY));
+                PrinterJob job = PrinterJob.createPrinterJob();
+                if (job != null){
+                    boolean success = job.printPage(node);
+                    if (success){ job.endJob();
+                }else {
+                    System.out.println("printing failed");
+                }}else {
+                    System.out.println("could not create a printer job");
 
-                ObservableSet<Printer> printers = Printer.getAllPrinters();
-                for(Printer printer : printers){
-                    TF.appendText(printer.getName()+"\n");
                 }
             }
         });
-        VBox prt = new VBox(10);
-        /*
-        final TextArea textArea = new TextArea();
-        prt.getChildren().addAll(button,textArea);
-        prt.setPrefSize(400,250);
-        prt.setStyle("-fx-padding: 10;" +
-                "-fx-border-style: solid inside;" +
-                "-fx-border-width: 2;" +
-                "-fx-border-insets: 5;" +
-                "-fx-border-radius: 5;" +
-                "-fx-border-color: blue;");
-        Scene scene = new Scene(prt);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("show all printers");
+        Print.getItems().addAll(print);
 
-         */
 
         /*show*/
         primaryStage.show();
