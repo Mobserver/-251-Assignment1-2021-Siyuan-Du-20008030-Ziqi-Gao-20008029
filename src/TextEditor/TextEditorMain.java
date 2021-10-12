@@ -202,7 +202,7 @@ public class TextEditorMain extends Application {
                     public void handle(ActionEvent actionEvent) {
                         String s = newTF.getText();
                         String s2 = TF.getText();
-                        String[] slist = s2.split(" ");
+                        String[] slist = s2.split("[\n ]");
                         ArrayList<Integer> longthgroup = new ArrayList<>();
                         ArrayList<Integer> lwgroup = new ArrayList<>();
                         for (int i = 0; i < slist.length; i++) {
