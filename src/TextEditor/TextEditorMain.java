@@ -13,10 +13,17 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.*;
 import javafx.scene.transform.Scale;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.awt.*;
 import java.io.*;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
@@ -42,11 +49,10 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
 
-
-import javax.swing.text.Document;
+import javax.swing.*;
+import javax.swing.text.*;
 import java.util.ArrayList;
-
-
+import java.util.List;
 
 
 public class TextEditorMain extends Application {
@@ -107,7 +113,7 @@ public class TextEditorMain extends Application {
             public void handle(ActionEvent actionEvent) {
                 FileChooser FC = new FileChooser();
                 FC.setTitle("open a txt");
-                FC.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT","*.txt"),new FileChooser.ExtensionFilter("ODT","*.odt"));
+                FC.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT","*.txt"),new FileChooser.ExtensionFilter("ODT","*.odt"),new FileChooser.ExtensionFilter("RTF","*.rtf"));
                 File f = FC.showOpenDialog(primaryStage);
                 if (f != null){
                     StringBuilder SB = new StringBuilder();
@@ -138,7 +144,7 @@ public class TextEditorMain extends Application {
             public void handle(ActionEvent actionEvent) {
                 FileChooser FC2 = new FileChooser();
                 FC2.setTitle("save a txt");
-                FC2.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT","*.txt"),new FileChooser.ExtensionFilter("ODT","*.odt"));
+                FC2.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT","*.txt"),new FileChooser.ExtensionFilter("ODT","*.odt"),new FileChooser.ExtensionFilter("RTF","*.rtf"));
                 File f = FC2.showSaveDialog(primaryStage);
                 String S2 = TF.getText();
                 try{
@@ -262,35 +268,30 @@ public class TextEditorMain extends Application {
         });
         Help.getItems().addAll(about);
 
-
-
-        /*print
+        /*Print*/
         MenuItem print = new MenuItem("Print");
         print.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                final Node node = root;
+                Printer printer = Printer.getDefaultPrinter();
+                PageLayout pageLayout = printer.createPageLayout(Paper.NA_LETTER,PageOrientation.PORTRAIT,Printer.MarginType.DEFAULT);
+                double scaleX = pageLayout.getPrintableWidth() / node.getBoundsInParent().getWidth();
+                double scaleY = pageLayout.getPrintableHeight() / node.getBoundsInParent().getHeight();
+                node.getTransforms().add(new Scale(scaleX,scaleY));
+                PrinterJob job = PrinterJob.createPrinterJob();
+                if (job != null){
+                    boolean success = job.printPage(node);
+                    if (success){ job.endJob();
+                    }else {
+                        System.out.println("printing failed");
+                    }}else {
+                    System.out.println("could not create a printer job");
 
-                ObservableSet<Printer> printers = Printer.getAllPrinters();
-                for(Printer printer : printers){
-                    TF.appendText(printer.getName()+"\n");
                 }
             }
         });
-        VBox prt = new VBox(10);
-
-        final TextArea textArea = new TextArea();
-        prt.getChildren().addAll(button,textArea);
-        prt.setPrefSize(400,250);
-        prt.setStyle("-fx-padding: 10;" +
-                "-fx-border-style: solid inside;" +
-                "-fx-border-width: 2;" +
-                "-fx-border-insets: 5;" +
-                "-fx-border-radius: 5;" +
-                "-fx-border-color: blue;");
-        Scene scene = new Scene(prt);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("show all printers");*/
-
+        Print.getItems().addAll(print);
 
         /*PDF  manage*/
         MenuItem PDF = new MenuItem("PDF");
@@ -330,6 +331,155 @@ public class TextEditorMain extends Application {
             }
         });
         Manage.getItems().addAll(PDF);
+
+        /*Open .java file*/
+        MenuItem javafile = new MenuItem("Open .java file");
+        javafile.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                FileChooser FC = new FileChooser();
+                FC.setTitle("open a .java file");
+                FC.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("JAVA","*.java"));
+                File f = FC.showOpenDialog(primaryStage);
+                if (f != null){
+                    StringBuilder SB = new StringBuilder();
+                    try {
+                        BufferedReader BR = new BufferedReader(new FileReader(f));
+                        String line = BR.readLine();
+                        while (line != null){
+                            SB.append(line);
+                            line = BR.readLine();
+                            SB.append("\n");
+                        }
+                        System.out.println("open complete");
+                        BR.close();
+                    }  catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    String S = SB.toString();
+                    String[] slist = S.split(" ");
+
+                    JTextPane textPane = new JTextPane();
+                    JScrollPane jsp = new JScrollPane(textPane);
+                    Document doc = textPane.getDocument();
+                    Style style = textPane.addStyle("I'm a Style", null);
+                    StyleConstants.setFontSize(style,20);
+
+
+
+
+
+
+
+
+                    List<String> checklist = new ArrayList<String>();
+                    checklist.add("package");
+                    checklist.add("import");
+                    checklist.add("public");
+                    checklist.add("private");
+                    checklist.add("protected");
+                    checklist.add("class");
+                    checklist.add("extends");
+                    checklist.add("void");
+                    checklist.add("throws");
+                    checklist.add("new");
+                    checklist.add("int");
+                    checklist.add("float");
+                    checklist.add("double");
+                    checklist.add("ture");
+                    checklist.add("false");
+                    checklist.add("final");
+                    checklist.add(";");
+                    checklist.add("try");
+                    checklist.add("catch");
+                    checklist.add("null");
+                    checklist.add("if");
+                    checklist.add("while");
+                    checklist.add("else");
+                    checklist.add("return");
+                    checklist.add(",");
+                    checklist.add("finally");
+                    checklist.add("static");
+
+
+                    for(String s:slist){
+                        String flag = "black";
+
+                        if (s.contains(",") || s.contains(";")){
+                            String s1 = s.substring(0,s.length()-1);
+                            String s2 = s.substring(s.length()-1,s.length());
+                            StyleConstants.setForeground(style, Color.black);
+                            try {
+                                doc.insertString(doc.getLength(), s1, style);
+                            } catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                            StyleConstants.setForeground(style, Color.orange);
+                            try {
+                                doc.insertString(doc.getLength(), s2, style);
+                            } catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                            flag = ", or ;";
+                        }
+
+
+                        if (checklist.contains(s)){
+                            StyleConstants.setForeground(style, Color.orange);
+                            try {
+                                doc.insertString(doc.getLength(), s, style);
+                            } catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                            flag = "orange";
+                        }
+
+                        if (flag.equals("black")){
+                            StyleConstants.setForeground(style, Color.black);
+                            try {
+                                doc.insertString(doc.getLength(), s, style);
+                            } catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        try {
+                            doc.insertString(doc.getLength(), " ", style);
+                        } catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+
+
+                    /*StyleConstants.setForeground(style, Color.red);
+                    try {
+                        doc.insertString(doc.getLength(), "dasdas", style);
+                    } catch (BadLocationException e) {
+                        e.printStackTrace();
+                    }*/
+
+
+
+                    JFrame fr = new JFrame("Open .java file");
+                    fr.setSize(700,600);
+                    fr.getContentPane().add(jsp);
+                    fr.setVisible(true);
+
+
+
+
+
+
+                }
+                else {
+                    System.out.println("please choose a .java file");
+                }
+            }
+        });
+        File.getItems().addAll(javafile);
+
 
 
         /*show*/
