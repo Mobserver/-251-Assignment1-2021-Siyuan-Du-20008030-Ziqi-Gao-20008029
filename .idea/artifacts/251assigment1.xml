@@ -1,0 +1,23 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="251assigment1">
+    <output-path>$PROJECT_DIR$/out/artifacts/251assigment1</output-path>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="TextEditorMain" />
+        <option name="description" value="" />
+        <option name="height" value="600" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="nativeBundle" value="all" />
+        <option name="title" value="TE" />
+        <option name="vendor" value="" />
+        <option name="version" value="" />
+        <option name="width" value="700" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="251assigment1.jar">
+        <element id="module-output" name="251assigment1" />
+      </element>
+    </root>
+  </artifact>
+</component>
