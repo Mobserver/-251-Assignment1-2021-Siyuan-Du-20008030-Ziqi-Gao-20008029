@@ -50,7 +50,14 @@ in the github, we have 2 working stream, main and master.
 The final version was uploded to another stream called final version.
 
 * * *
+### Statemet
+Information fo two contributors：
+Messy University
+* Ziqi Gao: student ID 20008029
+* Siyuan Du: student ID 20008030
 
+2021/10/12
 
+* * *
 ### Agreement
 None
