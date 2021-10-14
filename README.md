@@ -18,22 +18,39 @@ This project is a basic Texteditor writen by java, with mutiable functions, can 
 * **BASIC SYNTAX**: for the opened Java file, it implemented the basic color change.
 * * *
 ### Environmental Dependence
+There are three dependences
 
+```
+<dependencies>
+    <dependency>                
+        <groupId>org.apache.pdfbox</groupId>
+        <artifactId>pdfbox</artifactId>
+        <version>2.0.24</version>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.5.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter
+        engine</artifactId>
+        <version>5.5.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+```
 * * *
 
 
 ### Description of the directory structure
-we have 2 stream, main and master.
-The final version was uploded to the main.
+in the github, we have 2 working stream, main and master.
+The final version was uploded to another stream called final version.
 
 * * *
 
-### Version content update
-
-* * *
-
-### Statement
-
-* * *
 
 ### Agreement
+None
